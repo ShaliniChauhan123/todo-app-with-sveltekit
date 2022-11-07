@@ -1,12 +1,7 @@
-import type { ITodo } from 'src/types/todo';
+import { getCookie } from '../helper/cookie';
 import { writable } from 'svelte/store';
 
-export const todos = writable([
-	{ id: '1e4a59703af84', todo: 'Todo 1', completed: true },
-	{ id: '9e09bcd7b9349', todo: 'Todo 2', completed: false },
-	{ id: '9e4273a51a37c', todo: 'Todo 3', completed: false },
-	{ id: '53ae48bf605cc', todo: 'Todo 4', completed: false }
-]);
+export const todos = writable([{ _id: '', description: '', completed: false }]);
 function generateRandomId(): string {
 	return Math.random().toString(16).slice(2);
 }
@@ -20,36 +15,37 @@ export const addTodo = async (todo: string) => {
 		}),
 		headers: {
 			'content-type': 'application/json',
-			authorization: `${document.cookie.substring(6)}`
+			authorization: `${getCookie('token')}`
 		}
 	});
-
-	const users = await response.json();
-	console.log('check', response);
-
-	let newTodo: ITodo = {
-		id: generateRandomId(),
-		todo: todo,
+	let newTodo = {
+		_id: generateRandomId(),
+		description: todo,
 		completed: false
 	};
-	todos.update((c): Array<ITodo> => [...c, newTodo]);
+	todos.update((c) => [...c, newTodo]);
 };
-export const deleteTodo = async (todo: ITodo) => {
+export const deleteTodo = async (id: string) => {
+	const response = await fetch(`https://task-manager-aryankush25.herokuapp.com/tasks/${id}`, {
+		method: 'DELETE',
+		headers: {
+			'content-type': 'application/json',
+			authorization: `${getCookie('token')}`
+		}
+	});
 	todos.update((prev) => {
-		return prev.filter((t) => t !== todo);
+		return prev.filter((t) => t._id !== id);
 	});
 };
 export const getTodo = async () => {
-	// todos.update((prev) => {
-	// 	return prev.filter((t) => t !== todo);
-	// });
 	const response = await fetch('https://task-manager-aryankush25.herokuapp.com/tasks', {
 		method: 'GET',
 		headers: {
 			'content-type': 'application/json',
-			authorization: `${document.cookie.substring(6)}`
+			authorization: `${getCookie('token')}`
 		}
 	});
-	console.log('GET', response);
-	//   todos.update((c): Array<ITodo> => [...c, ]);
+	const tasks = await response.json();
+	console.log('get', response);
+	return tasks;
 };
