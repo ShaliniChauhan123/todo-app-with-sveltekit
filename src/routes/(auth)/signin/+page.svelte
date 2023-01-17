@@ -1,13 +1,11 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { signIn } from '../../../helper/signIn';
 
 	let password = '1234567';
 	let email = 'shalinic@gluelabs.com';
 	let loadingState = 'initial';
 	async function submit() {
 		loadingState = 'progressing';
-		console.log('STATE', loadingState);
 		const response = await fetch('https://task-manager-aryankush25.herokuapp.com/users/login', {
 			method: 'POST',
 			body: JSON.stringify({
@@ -52,5 +50,6 @@
 			? 'Please wait...'
 			: 'Signin'}</button
 	>
-	<a href="/signup">SIGN UP</a>
+	<button on:click={() => goto('/signup')} disabled>Sign Up</button>
+	<!-- <a href="/signup">SIGN UP</a> -->
 </form>
